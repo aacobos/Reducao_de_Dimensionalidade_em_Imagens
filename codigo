@@ -1,0 +1,72 @@
+# ======================================
+# Projeto DNC - Redução de Dimensionalidade em Imagens
+# Versão com PIL + NumPy
+# Projeto feito no Colab
+# ======================================
+
+# --- Importando as Bibliotecas ---
+from google.colab import files
+from PIL import Image
+import numpy as np
+import matplotlib.pyplot as plt
+
+# --- Função para exibir imagens lado a lado ---
+def show_images(original, processed, title1="Original", title2="Processada", cmap=None):
+    plt.figure(figsize=(10,5))
+
+    # Original
+    plt.subplot(1,2,1)
+    plt.imshow(original)
+    plt.title(title1)
+    plt.axis("off")
+
+    # Processada
+    plt.subplot(1,2,2)
+    if cmap:  # usado para cinza ou binária
+        plt.imshow(processed, cmap=cmap)
+    else:  # imagem colorida normal
+        plt.imshow(processed)
+    plt.title(title2)
+    plt.axis("off")
+
+    plt.show()
+
+
+# --- Função para converter em escala de cinza ---
+def to_grayscale(image):
+    """
+    Fórmula padrão de luminância:
+    Y = 0.299*R + 0.587*G + 0.114*B
+    """
+    np_img = np.array(image)  # Converte para NumPy
+    R, G, B = np_img[:,:,0], np_img[:,:,1], np_img[:,:,2]
+    gray = 0.299*R + 0.587*G + 0.114*B
+    gray = gray.astype(np.uint8)  # transforma para inteiro (0–255)
+    return gray
+
+
+# --- Função para binarização ---
+def to_binary(image, threshold=127):
+    gray = to_grayscale(image)
+    binary = np.where(gray > threshold, 255, 0).astype(np.uint8)
+    return binary
+
+
+# ======================================
+# --- Usando o código ---
+
+# 1. Upload do arquivo
+uploaded = files.upload()
+
+# 2. Pega o nome do primeiro arquivo enviado
+filename = list(uploaded.keys())[0]
+
+# 3. Abre a imagem automaticamente
+image = Image.open(filename)
+
+# Agora pode rodar normalmente:
+gray_img = to_grayscale(image)
+binary_img = to_binary(image, threshold=128)
+
+show_images(image, gray_img, "Original", "Escala de Cinza", cmap="gray")
+show_images(image, binary_img, "Original", "Binarizada", cmap="gray")
